@@ -291,7 +291,7 @@ const UNIFORMS = {
   saturation: 1.0,
   hue: 0.0,
   vignette: 0.45,
-  blur: 0.0026,
+  blur: 0.0,
   grain: 0.0,
   seed: 42.0,
   rotate: 0.0,
@@ -417,12 +417,12 @@ export function ShaderBackground({ className }: { className?: string }) {
       Math.abs(UNIFORMS.timeScale) > 0.0001 && !prefersReducedMotion
 
     const resizeCanvas = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.25)
       const rawWidth = Math.max(1, Math.round(bounds.width * dpr))
       const rawHeight = Math.max(1, Math.round(bounds.height * dpr))
       const pixelScale = Math.min(
         1,
-        Math.sqrt(2_000_000 / Math.max(1, rawWidth * rawHeight)),
+        Math.sqrt(1_000_000 / Math.max(1, rawWidth * rawHeight)),
       )
       const width = Math.max(1, Math.round(rawWidth * pixelScale))
       const height = Math.max(1, Math.round(rawHeight * pixelScale))
@@ -522,7 +522,6 @@ export function ShaderBackground({ className }: { className?: string }) {
       mouseX += (targetX - mouseX) * follow
       mouseY += (targetY - mouseY) * follow
       cursorPresence += (targetPresence - cursorPresence) * follow
-      resizeCanvas()
       const width = canvas.width
       const height = canvas.height
       gl.uniform4f(
@@ -554,7 +553,7 @@ export function ShaderBackground({ className }: { className?: string }) {
       if (timeAnimated || pointerSettling) requestRender()
       else lastNow = null
     }
-    requestRender()
+    updateLayout()
     return () => {
       disposed = true
       cancelAnimationFrame(raf)

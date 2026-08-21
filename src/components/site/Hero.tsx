@@ -83,14 +83,14 @@ export function Hero() {
       id="top"
       className="relative flex min-h-[100dvh] w-full items-center overflow-hidden pt-24"
     >
-      <div className="absolute inset-0 z-0 bg-background">
+      <div className="absolute inset-0 z-0 bg-background pointer-events-none isolate">
         {isDesktop && (
-          <ShaderBackground className="absolute inset-0 opacity-85" />
+          <ShaderBackground className="absolute inset-0 opacity-85 pointer-events-auto" />
         )}
         <div aria-hidden="true" className="blueprint-grid hidden sm:block" />
         <motion.div
           aria-hidden="true"
-          className="absolute top-1/2 right-[-14%] hidden h-[560px] w-[560px] -translate-y-1/2 sm:block lg:h-[760px] lg:w-[760px]"
+          className="absolute top-1/2 right-[-14%] hidden h-[560px] w-[560px] -translate-y-1/2 sm:block lg:h-[760px] lg:w-[760px] transform-gpu will-change-transform"
           style={
             reduceMotion
               ? { opacity: 0.9 }
@@ -100,13 +100,13 @@ export function Hero() {
           <HeroMark />
         </motion.div>
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 pointer-events-none"
           style={{
             background:
               'linear-gradient(100deg, hsl(var(--background) / 0.88) 22%, hsl(var(--background) / 0.55) 52%, hsl(var(--background) / 0.15) 100%)',
           }}
         />
-        <div className="grain-overlay" />
+        <div className="grain-overlay pointer-events-none" />
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-6">
