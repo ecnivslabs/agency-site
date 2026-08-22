@@ -73,7 +73,10 @@ export function Capabilities() {
     <section id="capabilities" className="border-t border-border/60 py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal>
-          <h2 className="max-w-xl text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          <p className="font-mono-brand text-xs tracking-[0.2em] text-accent uppercase">
+            Capabilities
+          </p>
+          <h2 className="mt-3 max-w-xl text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             Multidisciplinary,{' '}
             <span className="font-accent-serif text-accent">
               proven in production.

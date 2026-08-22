@@ -11,32 +11,17 @@ import { cn } from '@/lib/utils'
 import { Magnetic } from './Magnetic'
 import { Reveal } from './Reveal'
 
-const DOMAIN_OPTIONS = [
-  'Software',
-  'Web',
-  'AI',
-  'Systems',
-  'Mobile',
-  'Cybersecurity',
-  'Performance',
-  'Not sure yet',
-]
+const CURRENCY_OPTIONS = ['USD', 'EUR', 'GBP', 'CAD', 'AUD']
 
-const BUDGET_OPTIONS = ['Under $5k', '$5k to $15k', '$15k to $50k', '$50k+']
-
-const TIMELINE_OPTIONS = [
-  'Within a month',
-  '1 to 3 months',
-  '3 to 6 months',
-  'Flexible',
-]
+const TIMELINE_UNIT_OPTIONS = ['Days', 'Weeks', 'Months']
 
 type FormState = {
   project: string
   description: string
-  domain: string
-  budget: string
-  timeline: string
+  budgetAmount: string
+  budgetCurrency: string
+  timelineValue: string
+  timelineUnit: string
   email: string
   company: string
 }
@@ -44,9 +29,10 @@ type FormState = {
 const INITIAL_STATE: FormState = {
   project: '',
   description: '',
-  domain: DOMAIN_OPTIONS[0],
-  budget: '',
-  timeline: TIMELINE_OPTIONS[3],
+  budgetAmount: '',
+  budgetCurrency: CURRENCY_OPTIONS[0],
+  timelineValue: '',
+  timelineUnit: TIMELINE_UNIT_OPTIONS[1],
   email: '',
   company: '',
 }
@@ -61,7 +47,14 @@ const LAST_SUBMIT_KEY = 'ecnivs-inquiry-last-submit'
 const inputClasses =
   'w-full rounded-xl border border-border bg-surface/60 px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/60 transition-[border-color,box-shadow] duration-200 focus:border-accent/60 focus:outline-none focus:ring-4 focus:ring-accent/10'
 
-const selectClasses = cn(inputClasses, 'appearance-none pr-10')
+const splitFieldClasses =
+  'flex items-stretch rounded-xl border border-border bg-surface/60 transition-[border-color,box-shadow] duration-200 focus-within:border-accent/60 focus-within:ring-4 focus-within:ring-accent/10'
+
+const splitInputClasses =
+  'min-w-0 flex-1 bg-transparent px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none'
+
+const splitSelectClasses =
+  'h-full cursor-pointer appearance-none bg-transparent py-3.5 pr-9 pl-4 text-sm text-foreground focus:outline-none'
 
 function Field({
   label,
@@ -96,51 +89,39 @@ function Field({
   )
 }
 
-function SelectField({
-  label,
-  htmlFor,
+function SelectSegment({
+  id,
   value,
   onChange,
   options,
-  placeholder,
-  error,
+  ariaLabel,
 }: {
-  label: string
-  htmlFor: string
+  id: string
   value: string
   onChange: (value: string) => void
   options: string[]
-  placeholder?: string
-  error?: string
+  ariaLabel: string
 }) {
   return (
-    <Field label={label} htmlFor={htmlFor} error={error}>
-      <div className="relative">
-        <select
-          id={htmlFor}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${htmlFor}-error` : undefined}
-          className={cn(selectClasses, error && 'border-danger')}
-        >
-          {placeholder && (
-            <option value="" disabled>
-              {placeholder}
-            </option>
-          )}
-          {options.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-        <CaretDown
-          size={14}
-          className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-muted-foreground"
-        />
-      </div>
-    </Field>
+    <div className="relative flex-shrink-0">
+      <select
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        aria-label={ariaLabel}
+        className={splitSelectClasses}
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+      <CaretDown
+        size={12}
+        className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
+      />
+    </div>
   )
 }
 
@@ -153,6 +134,7 @@ export function Inquiry() {
   const mountedAt = useRef(0)
   const projectRef = useRef<HTMLInputElement>(null)
   const descriptionRef = useRef<HTMLTextAreaElement>(null)
+  const budgetAmountRef = useRef<HTMLInputElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
   const successHeadingRef = useRef<HTMLHeadingElement>(null)
 
@@ -168,6 +150,14 @@ export function Inquiry() {
     setForm((current) => ({ ...current, [key]: value }))
   }
 
+  function updateBudgetAmount(raw: string) {
+    update('budgetAmount', raw.replace(/[^\d.,]/g, ''))
+  }
+
+  function updateTimelineValue(raw: string) {
+    update('timelineValue', raw.replace(/\D/g, '').slice(0, 3))
+  }
+
   function validate(): boolean {
     const nextErrors: Partial<Record<keyof FormState, string>> = {}
     if (form.project.trim().length < 2) {
@@ -177,8 +167,8 @@ export function Inquiry() {
       nextErrors.description =
         'Give us at least a couple of sentences on what needs to exist.'
     }
-    if (!form.budget) {
-      nextErrors.budget = 'Pick the budget band closest to reality.'
+    if (!form.budgetAmount.trim()) {
+      nextErrors.budgetAmount = 'Give us a number, even a rough one.'
     }
     if (!EMAIL_PATTERN.test(form.email.trim())) {
       nextErrors.email = 'Enter a valid email address.'
@@ -187,6 +177,7 @@ export function Inquiry() {
 
     if (nextErrors.project) projectRef.current?.focus()
     else if (nextErrors.description) descriptionRef.current?.focus()
+    else if (nextErrors.budgetAmount) budgetAmountRef.current?.focus()
     else if (nextErrors.email) emailRef.current?.focus()
 
     return Object.keys(nextErrors).length === 0
@@ -340,32 +331,69 @@ export function Inquiry() {
               />
             </Field>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-              <SelectField
-                label="Domain"
-                htmlFor="domain"
-                value={form.domain}
-                onChange={(value) => update('domain', value)}
-                options={DOMAIN_OPTIONS}
-              />
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <Field
+                label="Budget"
+                htmlFor="budget-amount"
+                error={errors.budgetAmount}
+              >
+                <div
+                  className={cn(
+                    splitFieldClasses,
+                    errors.budgetAmount && 'border-danger',
+                  )}
+                >
+                  <SelectSegment
+                    id="budget-currency"
+                    value={form.budgetCurrency}
+                    onChange={(value) => update('budgetCurrency', value)}
+                    options={CURRENCY_OPTIONS}
+                    ariaLabel="Currency"
+                  />
+                  <div className="w-px bg-border" />
+                  <input
+                    ref={budgetAmountRef}
+                    id="budget-amount"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.budgetAmount}
+                    onChange={(event) =>
+                      updateBudgetAmount(event.target.value)
+                    }
+                    placeholder="e.g. 15,000"
+                    aria-invalid={errors.budgetAmount ? true : undefined}
+                    aria-describedby={
+                      errors.budgetAmount ? 'budget-amount-error' : undefined
+                    }
+                    className={splitInputClasses}
+                  />
+                </div>
+              </Field>
 
-              <SelectField
-                label="Budget band"
-                htmlFor="budget"
-                value={form.budget}
-                onChange={(value) => update('budget', value)}
-                options={BUDGET_OPTIONS}
-                placeholder="Select a range"
-                error={errors.budget}
-              />
-
-              <SelectField
-                label="Target window"
-                htmlFor="timeline"
-                value={form.timeline}
-                onChange={(value) => update('timeline', value)}
-                options={TIMELINE_OPTIONS}
-              />
+              <Field label="Target window" htmlFor="timeline-value">
+                <div className={splitFieldClasses}>
+                  <input
+                    id="timeline-value"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={form.timelineValue}
+                    onChange={(event) =>
+                      updateTimelineValue(event.target.value)
+                    }
+                    placeholder="6"
+                    className={splitInputClasses}
+                  />
+                  <div className="w-px bg-border" />
+                  <SelectSegment
+                    id="timeline-unit"
+                    value={form.timelineUnit}
+                    onChange={(value) => update('timelineUnit', value)}
+                    options={TIMELINE_UNIT_OPTIONS}
+                    ariaLabel="Unit"
+                  />
+                </div>
+              </Field>
             </div>
 
             <Field label="Contact email" htmlFor="email" error={errors.email}>
