@@ -23,6 +23,7 @@ type FormState = {
   timelineValue: string
   timelineUnit: string
   email: string
+  linkedin: string
   company: string
 }
 
@@ -34,6 +35,7 @@ const INITIAL_STATE: FormState = {
   timelineValue: '',
   timelineUnit: TIMELINE_UNIT_OPTIONS[1],
   email: '',
+  linkedin: '',
   company: '',
 }
 
@@ -60,11 +62,13 @@ function Field({
   label,
   htmlFor,
   error,
+  optional,
   children,
 }: {
   label: string
   htmlFor: string
   error?: string
+  optional?: boolean
   children: ReactNode
 }) {
   return (
@@ -74,6 +78,11 @@ function Field({
         className="mb-2 block text-sm font-medium text-foreground"
       >
         {label}
+        {optional && (
+          <span className="ml-1.5 font-normal text-muted-foreground">
+            (optional)
+          </span>
+        )}
       </label>
       {children}
       {error && (
@@ -370,7 +379,7 @@ export function Inquiry() {
                 </div>
               </Field>
 
-              <Field label="Target window" htmlFor="timeline-value">
+              <Field label="Target window" htmlFor="timeline-value" optional>
                 <div className={splitFieldClasses}>
                   <input
                     id="timeline-value"
@@ -396,19 +405,41 @@ export function Inquiry() {
               </Field>
             </div>
 
-            <Field label="Contact email" htmlFor="email" error={errors.email}>
-              <input
-                ref={emailRef}
-                id="email"
-                type="email"
-                value={form.email}
-                onChange={(event) => update('email', event.target.value)}
-                placeholder="you@company.com"
-                aria-invalid={errors.email ? true : undefined}
-                aria-describedby={errors.email ? 'email-error' : undefined}
-                className={cn(inputClasses, errors.email && 'border-danger')}
-              />
-            </Field>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <Field
+                label="Contact email"
+                htmlFor="email"
+                error={errors.email}
+              >
+                <input
+                  ref={emailRef}
+                  id="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(event) => update('email', event.target.value)}
+                  placeholder="you@company.com"
+                  aria-invalid={errors.email ? true : undefined}
+                  aria-describedby={errors.email ? 'email-error' : undefined}
+                  className={cn(
+                    inputClasses,
+                    errors.email && 'border-danger',
+                  )}
+                />
+              </Field>
+
+              <Field label="LinkedIn" htmlFor="linkedin" optional>
+                <input
+                  id="linkedin"
+                  type="text"
+                  value={form.linkedin}
+                  onChange={(event) =>
+                    update('linkedin', event.target.value)
+                  }
+                  placeholder="linkedin.com/in/you"
+                  className={inputClasses}
+                />
+              </Field>
+            </div>
 
             {status === 'unconfigured' && (
               <p
