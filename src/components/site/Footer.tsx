@@ -89,10 +89,10 @@ export function Footer() {
 
         <div
           aria-hidden="true"
-          className="pointer-events-none h-[162px] overflow-hidden leading-[0.8] select-none"
+          className="pointer-events-none h-[clamp(64.8px,17.67vw,162px)] overflow-hidden leading-[0.8] select-none"
         >
           <span
-            className="block translate-y-[22%] font-semibold whitespace-nowrap text-[220px] tracking-[-0.04em]"
+            className="block translate-y-[22%] font-semibold whitespace-nowrap text-[clamp(88px,24vw,220px)] tracking-[-0.04em]"
             style={{
               color: '#131417',
               textShadow:
