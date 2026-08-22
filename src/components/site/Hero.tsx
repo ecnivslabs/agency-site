@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import { ArrowUpRight } from '@phosphor-icons/react'
 import { SmokyButton } from '@/components/ui/smoky-button'
@@ -47,27 +47,9 @@ function HeroMark() {
   )
 }
 
-function useIsDesktopViewport() {
-  const [isDesktop, setIsDesktop] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      window.matchMedia('(min-width: 640px)').matches,
-  )
-
-  useEffect(() => {
-    const mql = window.matchMedia('(min-width: 640px)')
-    const handleChange = () => setIsDesktop(mql.matches)
-    mql.addEventListener('change', handleChange)
-    return () => mql.removeEventListener('change', handleChange)
-  }, [])
-
-  return isDesktop
-}
-
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null)
   const reduceMotion = useReducedMotion()
-  const isDesktop = useIsDesktopViewport()
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -84,9 +66,7 @@ export function Hero() {
       className="relative flex min-h-[100dvh] w-full items-center overflow-hidden pt-24"
     >
       <div className="absolute inset-0 z-0 bg-background pointer-events-none isolate">
-        {isDesktop && (
-          <ShaderBackground className="absolute inset-0 opacity-85 pointer-events-auto" />
-        )}
+        <ShaderBackground className="absolute inset-0 opacity-85 pointer-events-auto" />
         <div aria-hidden="true" className="blueprint-grid hidden sm:block" />
         <motion.div
           aria-hidden="true"
